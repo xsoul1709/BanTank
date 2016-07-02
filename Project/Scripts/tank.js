@@ -38,11 +38,4 @@ class Tank{
       this.sprite.body.velocity.y = 0;
     }
   }
-
-  fire(){
-    if(TankOnline.game.time.now - this.lastShotTime > 200){
-      this.lastShotTime = TankOnline.game.time.now;
-      new Bullet(this);
-    }
-  }
 }
