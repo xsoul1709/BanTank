@@ -43,31 +43,21 @@ var preload = function(){
 }
 
 var create = function(){
+  TankOnline.client = new Client();
   TankOnline.game.physics.startSystem(Phaser.Physics.ARCADE);
-  TankOnline.keyboard = TankOnline.game.input.keyboard;
+  TankOnline.game.stage.disableVisibilityChange = true;
 
+  TankOnline.keyboard = TankOnline.game.input.keyboard;
 
   TankOnline.wallGroup = TankOnline.game.add.physicsGroup();
   TankOnline.bulletGroup = TankOnline.game.add.physicsGroup();
   TankOnline.tankGroup = TankOnline.game.add.physicsGroup();
-
-  var tank = new Tank(window.innerWidth/2, window.innerHeight/2, TankOnline.tankGroup);
-  TankOnline.inputController = new InputController(TankOnline.keyboard, tank);
-
   TankOnline.game.world.setBounds(0, 0, 3200, 800);
-  TankOnline.game.camera.follow(tank.sprite);
+  TankOnline.enemies = [];
 
   for(var i=0;i<TankOnline.map.length;i++){
     for(var j=0;j<TankOnline.map[i].length;j++){
-      /*
-        0 -> false
-        "" -> false
-        null -> false
-        undefined -> false
-        all other -> true
-       */
       if(TankOnline.map[i][j]){
-        // Because the wall_steel.png image is 16x16 pixels
         new Wall(j*16, i*16, TankOnline.wallGroup);
       }
     }
@@ -91,16 +81,60 @@ var update = function(){
     this
   );
 
-  TankOnline.inputController.update();
+  if(TankOnline.inputController){
+    TankOnline.inputController.update();
+  }
 }
 
+/*
+ *  HELPER FUNCTIONS
+ */
+TankOnline.getPlayerById = function(id){
+  for(var i=0;i<TankOnline.enemies.length;i++){
+    if(TankOnline.enemies[i].sprite.id == id){
+      return TankOnline.enemies[i];
+    }
+  }
+}
+/*
+ * PHYSICS EVENTS
+ */
 var onBulletHitWall = function(bulletSprite, wallSprite){
   bulletSprite.kill();
 }
 
 var onBulletHitTank = function(bulletSprite, tankSprite){
   if(bulletSprite.tankSprite != tankSprite){
-  tankSprite.damage(bulletSprite.bulletDamage);
-  bulletSprite.kill();
+    if(tankSprite.id == TankOnline.inputController.tank.sprite.id){
+      tankSprite.damage(bulletSprite.bulletDamage);
+    }
+    bulletSprite.kill();
   }
+}
+
+/*
+ * GAME EVENTS
+ */
+TankOnline.onConnected = function(data){
+  var tank = new Tank(data.x, data.y, TankOnline.tankGroup, data.id);
+  TankOnline.inputController = new InputController(TankOnline.keyboard, tank);
+  TankOnline.game.camera.follow(tank.sprite);
+}
+TankOnline.onReceivedOtherPlayersData = function(datas){
+  for(var i=0;i<datas.length;i++){
+    TankOnline.enemies.push(
+      new Tank(datas[i].x, datas[i].y, TankOnline.tankGroup, datas[i].id)
+    );
+  }
+}
+TankOnline.onReceivedNewPlayerData = function(data){
+  TankOnline.enemies.push(
+    new Tank(data.x, data.y, TankOnline.tankGroup, data.id)
+  );
+}
+
+TankOnline.onPlayerMoved = function(data){
+  var enemy = TankOnline.getPlayerById(data.id);
+  enemy.sprite.position = data.position;
+  enemy.update(data.direction);
 }
