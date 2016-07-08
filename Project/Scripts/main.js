@@ -105,9 +105,11 @@ var onBulletHitWall = function(bulletSprite, wallSprite){
 
 var onBulletHitTank = function(bulletSprite, tankSprite){
   if(bulletSprite.tankSprite != tankSprite){
-    if(tankSprite.id == TankOnline.inputController.tank.sprite.id){
+    //if(tankSprite.id == TankOnline.inputController.tank.sprite.id){
+      //cái hàm này mục đích là chỉ kiểm tra nếu như đạn dính vào mình thì mới nhận dame, còn đạn dính thằng khác mặc kệ
+      //mà test nó cứ điêu điêu, bài có vậy thôi, a xem 3 hàm là đc
       tankSprite.damage(bulletSprite.bulletDamage);
-    }
+    //}
     bulletSprite.kill();
   }
 }
@@ -137,4 +139,14 @@ TankOnline.onPlayerMoved = function(data){
   var enemy = TankOnline.getPlayerById(data.id);
   enemy.sprite.position = data.position;
   enemy.update(data.direction);
+}
+
+TankOnline.findTankWithThatId = function(id){
+  //Do có cái hàm getPlayerById rồi nên mình truyền id vào là xong
+  var enemy = TankOnline.getPlayerById(id);
+  //Chỗ này là id nhé, vì mình truyền trực tiếp id chứ k phải data chứa id
+  // thằng enemy này chính là thằng đã bắn ra đạn, nên mình cho nó bắn là xong, cơ mà e thêm hàm fire() vào trong tank, chứ để trong
+  // input kia k dùng được,
+  enemy.fire();
+  //DeBug thử xem có lỗi k
 }

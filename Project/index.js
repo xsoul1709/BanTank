@@ -42,6 +42,11 @@ io.on('connection', function(socket){
     playerInfo.y = data.position.y;
     socket.broadcast.emit('player_moved', data);
   });
+  socket.on('shot', function(id){
+    //Khi mà thằng server nhận đc thông tin từ thằng tank có id ở trên bắn r, thì nó báo cho tất cả mọi ng biết là thằng tank này bắn
+    socket.broadcast.emit('idshot', id);
+    //éo biết đặt tên là gì nữa, a đặt tùy nhé, tức là thông báo cho mn biết thằng id này bắn ra đạn
+  });
 });
 
 http.listen(6969, function(){

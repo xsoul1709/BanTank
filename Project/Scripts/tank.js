@@ -39,4 +39,7 @@ class Tank{
       this.sprite.body.velocity.y = 0;
     }
   }
+  fire(){
+    new Bullet(this);
+  }
 }
